@@ -7,14 +7,21 @@ typedef enum ObjectType {
     OBJ_INTEGER,
     OBJ_FLOAT,
     OBJ_STRING,
-    OBJ_VECTOR,
+    OBJ_ARRAY,
 } object_type_t;
+
+typedef enum ArrayType {
+    INTEGER_ARRAY,
+    FLOAT_ARRAY,
+} array_type_t;
+
+typedef struct ObjectArray object_array_t;
 
 typedef union ObjectData {
     int v_int;
     float v_float;
     char *v_string;
-    object_vector_t *v_object_vector; // pointer to object vector
+    object_array_t *v_object_array;
 } object_data_t;
 
 typedef struct Object {
@@ -22,14 +29,20 @@ typedef struct Object {
     object_data_t data;
 } object_t;
 
-typedef struct ObjectVector {
-    object_t **objects; // pointer to list of object pointers
-} object_vector_t;
-
+struct ObjectArray {
+    array_type_t type;
+    object_t *objects;
+    size_t size;
+    size_t capacity;
+};
 
 object_t *object_new_int(int value);
 object_t *object_new_float(float value);
 object_t *object_new_string(const char *value, size_t size);
-object_t *object_new_object_vector(size_t size);
+object_t *object_new_object_array(size_t size);
+
+void array_set(object_t* obj, int index, void* value);
+void array_append(object_t* obj, void* value);
+void array_add_at(object_t* obj, int index, void* value);
 
 #endif

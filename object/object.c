@@ -4,7 +4,7 @@
 #include "object.h"
 
 static object_t *object_alloc(object_type_t type) {
-    object_t *obj = malloc(sizeof(object_t));
+    object_t *obj = malloc(sizeof *obj);
     if (obj == NULL) {
         return NULL;
     }
@@ -47,34 +47,75 @@ object_t *object_new_string(const char *value, size_t size) {
 
     memcpy(copy, value, size);
     copy[size] = '\0';
+
     obj->data.v_string = copy;
     return obj;
 }
 
-object_t *object_new_object_vector(size_t size) {
-    // allocate new object
-    object_t *obj = object_alloc(OBJ_VECTOR);
-    if (obj == NULL) {
-        return NULL;
+void array_add_at(object_t *obj, size_t index, const void *value) {
+    if (obj == NULL || value == NULL) return;
+    if (obj->type != OBJ_ARRAY) return;
+
+    object_array_t *array = obj->data.v_object_array;
+    if (array == NULL || index > array->size) return;
+
+    size_t element_size;
+
+    switch (array->type) {
+        case INTEGER_ARRAY:
+            element_size = sizeof(int);
+            break;
+
+        case FLOAT_ARRAY:
+            element_size = sizeof(float);
+            break;
+
+        default:
+            return;
     }
 
-    // allocate object vector
-    object_vector_t *objects_vector = malloc(sizeof(object_vector_t));
-    if (objects_vector == NULL) {
-        free(obj);
-        return NULL;
+    // Grow if necessary
+    if (array->size == array->capacity) {
+        size_t new_capacity = array->capacity == 0
+            ? 4
+            : array->capacity * 2;
+
+        void *new_objects = realloc(
+            array->objects,
+            new_capacity * element_size
+        );
+
+        if (new_objects == NULL) return;
+
+        array->objects = new_objects;
+        array->capacity = new_capacity;
     }
 
-    // allocate the array on the heap
-    object_t **objects_array = calloc(size, sizeof(object_t*));
-    if (objects_array == NULL) {
-        free(objects_vector);
-        free(obj);
-        return NULL;
+    // Shift elements and insert
+    if (array->type == INTEGER_ARRAY) {
+        int *items = array->objects;
+
+        for (size_t i = array->size; i > index; i--)
+            items[i] = items[i - 1];
+
+        items[index] = *(const int *)value;
+
+    } else {
+        float *items = array->objects;
+
+        for (size_t i = array->size; i > index; i--)
+            items[i] = items[i - 1];
+
+        items[index] = *(const float *)value;
     }
 
-    objects_vector->objects = objects_array;
-    obj->data.v_object_vector = objects_vector;    
+    array->size++;
+}
 
-    return obj;
+void array_set(object_t* obj, int index, void* value) {
+    return;
+}
+
+void array_append(object_t* obj, void* value) {
+    return;
 }
