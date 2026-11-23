@@ -43,6 +43,6 @@ object_t *object_new_object_array(size_t size);
 
 void array_set(object_t* obj, int index, void* value);
 void array_append(object_t* obj, void* value);
-void array_add_at(object_t* obj, int index, void* value);
+void array_add_at(object_t *obj, size_t index, const void *value);
 
 #endif
