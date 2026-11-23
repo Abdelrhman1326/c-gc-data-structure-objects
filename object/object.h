@@ -31,7 +31,7 @@ typedef struct Object {
 
 struct ObjectArray {
     array_type_t type;
-    object_t *objects;
+    void *objects;
     size_t size;
     size_t capacity;
 };
@@ -39,10 +39,10 @@ struct ObjectArray {
 object_t *object_new_int(int value);
 object_t *object_new_float(float value);
 object_t *object_new_string(const char *value, size_t size);
-object_t *object_new_object_array(size_t size);
+object_t *object_new_object_array(array_type_t type, size_t capacity);
 
-void array_set(object_t* obj, int index, void* value);
-void array_append(object_t* obj, void* value);
+void array_set(object_t *obj, int index, void *value);
+void array_append(object_t *obj, void *value);
 void array_add_at(object_t *obj, size_t index, const void *value);
 
 #endif

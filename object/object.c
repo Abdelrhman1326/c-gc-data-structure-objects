@@ -52,6 +52,44 @@ object_t *object_new_string(const char *value, size_t size) {
     return obj;
 }
 
+object_t *object_new_object_array(array_type_t type, size_t capacity) {
+    if (type != INTEGER_ARRAY && type != FLOAT_ARRAY)
+        return NULL;
+
+    object_t *obj = object_alloc(OBJ_ARRAY);
+    if (obj == NULL) return NULL;
+
+    object_array_t *array = malloc(sizeof *array);
+    if (array == NULL) {
+        free(obj);
+        return NULL;
+    }
+
+    void *objects = NULL;
+
+    if (capacity > 0) {
+        size_t element_size = type == INTEGER_ARRAY
+            ? sizeof(int)
+            : sizeof(float);
+
+        objects = calloc(capacity, element_size);
+        if (objects == NULL) {
+            free(array);
+            free(obj);
+            return NULL;
+        }
+    }
+
+    array->type = type;
+    array->objects = objects;
+    array->size = 0;
+    array->capacity = capacity;
+
+    obj->data.v_object_array = array;
+
+    return obj;
+}
+
 void array_add_at(object_t *obj, size_t index, const void *value) {
     if (obj == NULL || value == NULL) return;
     if (obj->type != OBJ_ARRAY) return;
@@ -112,10 +150,10 @@ void array_add_at(object_t *obj, size_t index, const void *value) {
     array->size++;
 }
 
-void array_set(object_t* obj, int index, void* value) {
+void array_set(object_t *obj, int index, void *value) {
     return;
 }
 
-void array_append(object_t* obj, void* value) {
+void array_append(object_t *obj, void *value) {
     return;
 }
