@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>  // SIZE_MAX
 
 #include "object.h"
 
@@ -67,17 +68,20 @@ object_t *object_new_object_array(array_type_t type, size_t capacity) {
 
     void *objects = NULL;
 
-    if (capacity > 0) {
-        size_t element_size = type == INTEGER_ARRAY
-            ? sizeof(int)
-            : sizeof(float);
+    if (capacity == 0) {
+        capacity = 4;
+    }
 
-        objects = calloc(capacity, element_size);
-        if (objects == NULL) {
-            free(array);
-            free(obj);
-            return NULL;
-        }
+    size_t element_size = type == INTEGER_ARRAY
+    ? sizeof(int)
+    : sizeof(float);
+
+    objects = calloc(capacity, element_size);
+
+    if (objects == NULL) {
+        free(array);
+        free(obj);
+        return NULL;
     }
 
     array->type = type;
@@ -172,5 +176,58 @@ void array_set(const object_t *obj, size_t index, const void *value) {
 }
 
 void array_append(const object_t *obj, const void *value) {
-    return;
+    if (obj == NULL || value == NULL || obj->type != OBJ_ARRAY) return;
+
+    object_array_t *array = obj->data.v_object_array;
+    if (array->type != INTEGER_ARRAY && array->type != FLOAT_ARRAY)
+        return;
+
+    if (array->size < array->capacity) {
+        switch (array->type) {
+            case(INTEGER_ARRAY):
+                ((int *)array->objects)[array->size] = *(const int *)value;
+                break;
+            case(FLOAT_ARRAY):
+                ((float *)array->objects)[array->size] = *(const float *)value;
+                break;
+            default:
+                return;
+        }
+
+        array->size++;
+    } else {
+        // expand the size before appending
+
+        size_t element_size = array->type == INTEGER_ARRAY
+            ? sizeof(int)
+            : sizeof(float);
+
+        if (array->capacity > SIZE_MAX / (element_size * 2))
+            return;
+
+        void *new_objects = realloc(
+            array->objects,
+            array->capacity * 2 * element_size
+        );
+
+        if (new_objects == NULL) {
+            return;
+        }
+
+        array->objects = new_objects;
+        array->capacity = array->capacity * 2;
+
+        switch (array->type) {
+            case(INTEGER_ARRAY):
+                ((int *)array->objects)[array->size] = *(const int *)value;
+                break;
+            case(FLOAT_ARRAY):
+                ((float *)array->objects)[array->size] = *(const float *)value;
+                break;
+            default:
+                return;
+        }
+
+        array->size++;
+    }
 }
