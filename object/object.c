@@ -90,7 +90,7 @@ object_t *object_new_object_array(array_type_t type, size_t capacity) {
     return obj;
 }
 
-void array_add_at(object_t *obj, size_t index, const void *value) {
+void array_add_at(const object_t *obj, size_t index, const void *value) {
     if (obj == NULL || value == NULL) return;
     if (obj->type != OBJ_ARRAY) return;
 
@@ -150,10 +150,27 @@ void array_add_at(object_t *obj, size_t index, const void *value) {
     array->size++;
 }
 
-void array_set(object_t *obj, int index, void *value) {
-    return;
+void array_set(const object_t *obj, size_t index, const void *value) {
+    // set position index in obj to value
+    if (obj == NULL || value == NULL) return;
+    if (obj->type != OBJ_ARRAY) return;
+    object_array_t *array = obj->data.v_object_array;
+    if (array == NULL || array->objects == NULL || index >= array->size) return;
+
+    switch (array->type) {
+        case (INTEGER_ARRAY):
+            ((int *)array->objects)[index] = *(const int *)value;
+            break;
+
+        case (FLOAT_ARRAY):
+            ((float *)array->objects)[index] = *(const float *)value;
+            break;
+
+        default:
+            return;
+    }
 }
 
-void array_append(object_t *obj, void *value) {
+void array_append(const object_t *obj, const void *value) {
     return;
 }

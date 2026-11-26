@@ -13,6 +13,7 @@ typedef enum ObjectType {
 typedef enum ArrayType {
     INTEGER_ARRAY,
     FLOAT_ARRAY,
+    STRING_ARRAY,
 } array_type_t;
 
 typedef struct ObjectArray object_array_t;
@@ -41,8 +42,8 @@ object_t *object_new_float(float value);
 object_t *object_new_string(const char *value, size_t size);
 object_t *object_new_object_array(array_type_t type, size_t capacity);
 
-void array_set(object_t *obj, int index, void *value);
-void array_append(object_t *obj, void *value);
-void array_add_at(object_t *obj, size_t index, const void *value);
+void array_set(const object_t *obj, size_t index, const void *value);
+void array_append(const object_t *obj, const void *value);
+void array_add_at(const object_t *obj, size_t index, const void *value);
 
 #endif
